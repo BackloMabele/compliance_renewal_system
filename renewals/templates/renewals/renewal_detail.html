@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ renewal.renewal_title }}</h2>
+    <p><strong>Renewal Body:</strong> {{ renewal.renewal_body }}</p>
+    <p><strong>Issuing Authority:</strong> {{ renewal.issuing_authority }}</p>
+    <p><strong>Issue Date:</strong> {{ renewal.issue_date }}</p>
+    <p><strong>Expiration Date:</strong> {{ renewal.expiration_date }}</p>
+    <p><strong>Status:</strong> {{ renewal.status }}</p>
+    <p><strong>Description:</strong> {{ renewal.description }}</p>
+    <p><strong>Notification Emails:</strong> {{ renewal.notification_emails }}</p>
+    <a href="{% url 'update_renewal' renewal.pk %}" class="btn btn-primary">Update</a>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+</div>
+<div class="mb-3">
+    <strong>Attachment:</strong>
+    {% if renewal.attachment %}
+        <a href="{{ renewal.attachment.url }}" class="btn btn-primary btn-sm" download>Download Attachment</a>
+    {% else %}
+        <p>No attachment available.</p>
+    {% endif %}
+</div>
+{% endblock %}

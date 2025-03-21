@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Update Renewal</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form method="post" class="needs-validation" novalidate enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Renewal Title -->
+                        <div class="mb-3">
+                            <label for="id_renewal_title" class="form-label">Renewal Title</label>
+                            {{ form.renewal_title }}
+                            <div class="invalid-feedback">
+                                Please provide a renewal title.
+                            </div>
+                        </div>
+
+                        <!-- Renewal Body -->
+                        <div class="mb-3">
+                            <label for="id_renewal_body" class="form-label">Renewal Body</label>
+                            {{ form.renewal_body }}
+                            <div class="invalid-feedback">
+                                Please provide a renewal body.
+                            </div>
+                        </div>
+
+                        <!-- Issuing Authority -->
+                        <div class="mb-3">
+                            <label for="id_issuing_authority" class="form-label">Issuing Authority</label>
+                            {{ form.issuing_authority }}
+                            <div class="invalid-feedback">
+                                Please provide an issuing authority.
+                            </div>
+                        </div>
+
+                        <!-- Issue Date -->
+                        <div class="mb-3">
+                            <label for="id_issue_date" class="form-label">Issue Date</label>
+                            {{ form.issue_date }}
+                            <div class="invalid-feedback">
+                                Please provide an issue date.
+                            </div>
+                        </div>
+
+                        <!-- Expiration Date -->
+                        <div class="mb-3">
+                            <label for="id_expiration_date" class="form-label">Expiration Date</label>
+                            {{ form.expiration_date }}
+                            <div class="invalid-feedback">
+                                Please provide an expiration date.
+                            </div>
+                        </div>
+
+                        <!-- Notification Period -->
+                        <div class="mb-3">
+                            <label for="id_notification_period" class="form-label">Notification Period (days)</label>
+                            {{ form.notification_period }}
+                            <div class="invalid-feedback">
+                                Please provide a valid notification period.
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            {{ form.description }}
+                            <div class="invalid-feedback">
+                                Please provide a description.
+                            </div>
+                        </div>
+
+                        <!-- Notification Emails -->
+                        <div class="mb-3">
+                            <label for="id_notification_emails" class="form-label">Notification Emails</label>
+                            {{ form.notification_emails }}
+                            <div class="invalid-feedback">
+                                Please provide valid email addresses.
+                            </div>
+                        </div>
+
+                        <!-- Attachment -->
+                        <div class="mb-3">
+                            <label for="id_attachment" class="form-label">Attachment</label>
+                            {{ form.attachment }}
+                            <div class="invalid-feedback">
+                                Please upload a valid file (PDF, DOC, XLS, TXT).
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="{% url 'renewal_detail' renewal.pk %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Validation Script -->
+<script>
+    (function () {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+{% endblock %}

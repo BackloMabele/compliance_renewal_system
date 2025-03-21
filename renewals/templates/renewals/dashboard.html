@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">NEL RENEWALS MANAGEMENT DASHBOARD</h2>
+
+    <!-- Display success messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message|safe }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Search, Sorting, and Actions -->
+    <form method="get" action="{% url 'dashboard' %}" class="mb-3 d-flex align-items-center" id="search-form">
+        <!-- Search Bar -->
+        <div class="me-2 flex-grow-1" style="max-width: 300px;">
+            <div class="input-group input-group-sm">
+                <input type="text" name="q" id="search-input" class="form-control" placeholder="Search renewals..." value="{{ query|default:'' }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+
+        <!-- Sorting Dropdown -->
+        <div class="me-2">
+            <select name="sort" id="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Sort By</option>
+                <option value="renewal_title" {% if sort == "renewal_title" %}selected{% endif %}>Renewal Title (A-Z)</option>
+                <option value="-renewal_title" {% if sort == "-renewal_title" %}selected{% endif %}>Renewal Title (Z-A)</option>
+                <option value="expiration_date" {% if sort == "expiration_date" %}selected{% endif %}>Expiration Date (Oldest to Newest)</option>
+                <option value="-expiration_date" {% if sort == "-expiration_date" %}selected{% endif %}>Expiration Date (Newest to Oldest)</option>
+                <option value="status" {% if sort == "status" %}selected{% endif %}>Status (A-Z)</option>
+                <option value="-status" {% if sort == "-status" %}selected{% endif %}>Status (Z-A)</option>
+                <option value="user__username" {% if sort == "user__username" %}selected{% endif %}>Created By (A-Z)</option>
+                <option value="-user__username" {% if sort == "-user__username" %}selected{% endif %}>Created By (Z-A)</option>
+                <option value="days_remaining" {% if sort == "days_remaining" %}selected{% endif %}>Days Remaining (Lowest to Highest)</option>
+                <option value="-days_remaining" {% if sort == "-days_remaining" %}selected{% endif %}>Days Remaining (Highest to Lowest)</option>
+            </select>
+        </div>
+
+        <!-- Reset Filters Button -->
+        <div>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">Reset Filters</a>
+        </div>
+    </form>
+
+    <!-- Bulk Delete Form -->
+    <form method="post" action="{% url 'bulk_delete_renewals' %}">
+        {% csrf_token %}
+
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>
+                        <input type="checkbox" id="select-all">
+                    </th>
+                    <th>Title</th>
+                    <th>Issuing Authority</th>
+                    <th>Expiration Date</th>
+                    <th>Status</th>
+                    <th>Days Remaining</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for renewal in renewals %}
+                <tr>
+                    <td>
+                        {% if request.user.is_superuser or request.user == renewal.user %}
+                            <input type="checkbox" name="selected_renewals" value="{{ renewal.id }}">
+                        {% endif %}
+                    </td>
+                    <td>{{ renewal.renewal_title }}</td>
+                    <td>{{ renewal.issuing_authority }}</td>
+                    <td>{{ renewal.expiration_date }}</td>
+
+                    <!-- Status with color -->
+                    <td style="
+                        color: {% if renewal.status == 'active' %} darkgreen
+                            {% elif renewal.status == 'expiring_soon' %} orange
+                            {% elif renewal.status == 'expired' %} red
+                            {% endif %};
+                        font-weight: bold;">
+                        {{ renewal.get_status_display }}
+                    </td>
+
+                    <!-- Days Remaining Column -->
+                    <td style="font-weight: bold;
+                        color: {% if renewal.days_remaining <= 0 %} red
+                               {% elif renewal.days_remaining <= 7 %} orange
+                               {% else %} darkgreen
+                               {% endif %};">
+                        {{ renewal.days_remaining }} days
+                    </td>
+
+                    <td>
+                        <a href="{% url 'renewal_detail' renewal.id %}" class="btn btn-sm btn-secondary">View</a>
+                        <a href="{% url 'update_renewal' renewal.id %}" class="btn btn-sm btn-dark">Edit</a>
+
+                        <!-- Show Delete button only if the user is the creator or an admin -->
+                        {% if request.user.is_superuser or request.user == renewal.user %}
+                            <a href="{% url 'delete_renewal' renewal.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this renewal?');">Delete</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No renewals found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Bulk Delete & Create Buttons -->
+        <div class="d-flex justify-content-between">
+            {% if request.user.is_superuser %}
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete the selected renewals?');">
+                    <i class="bi bi-trash"></i> Delete Selected
+                </button>
+            {% else %}
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete the selected renewals?');" disabled>
+                    <i class="bi bi-trash"></i> Delete Selected
+                </button>
+            {% endif %}
+            <a href="{% url 'create_renewal' %}" class="btn btn-success btn-sm">
+                <i class="bi bi-plus-circle"></i> Create Renewal
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript for Select All and Search Enter Key -->
+<script>
+    // Select All functionality
+    document.getElementById('select-all').addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('input[name="selected_renewals"]');
+        checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+    });
+
+    // Submit search on Enter key press
+    document.getElementById("search-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            document.getElementById("search-form").submit();
+        }
+    });
+</script>
+{% endblock %}

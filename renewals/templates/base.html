@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compliance Renewal System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-control {
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fffbfb;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-control:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .invalid-feedback {
+            display: none;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #dc3545;
+        }
+        .was-validated .form-control:invalid ~ .invalid-feedback {
+            display: block;
+        }
+        .navbar {
+            background-color: #022943 !important; /* Dark blue navbar */
+        }
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.75) !important;
+        }
+        .navbar-nav .nav-link:hover {
+            color: rgba(255, 255, 255, 1) !important;
+        }
+        .navbar-text {
+            color: rgba(255, 255, 255, 0.75) !important;
+        }
+        .navbar-nav form {
+            display: inline !important;
+        }
+        .navbar-nav form button {
+            display: inline !important;
+            vertical-align: middle;
+        }
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Form for bulk deletion (hidden, used by navbar button) -->
+    <form id="bulk-delete-form" method="post" action="{% url 'bulk_delete_renewals' %}">
+        {% csrf_token %}
+    </form>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Company Logo" width="30" height="30" class="d-inline-block align-top">
+                NOVATEAS EPZ RENEWALS MANAGEMENT SYSTEM
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a href="{% url 'create_renewal' %}" class="btn btn-success btn-sm me-3">+ Create Renewal</a>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="btn btn-danger btn-sm me-3" onclick="submitBulkDelete()">Delete Selected</button>
+                        </li>
+                        <li class="nav-item">
+                            <span class="navbar-text me-2 align-middle">Welcome, {{ user.username }}</span>
+                        </li>
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-link nav-link d-inline align-middle" style="padding: 0; border: none; background: none; color: rgba(255, 255, 255, 0.75);">Logout</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript for Bulk Delete -->
+    <script>
+        function submitBulkDelete() {
+            const checkboxes = document.querySelectorAll('input[name="selected_renewals"]:checked');
+            if (checkboxes.length === 0) {
+                alert("No renewals selected for deletion.");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to delete the selected renewals?")) {
+                return;
+            }
+
+            const form = document.getElementById('bulk-delete-form');
+            
+            checkboxes.forEach(checkbox => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'selected_renewals';
+                input.value = checkbox.value;
+                form.appendChild(input);
+            });
+
+            form.submit();
+        }
+    </script>
+
+</body>
+</html>
