@@ -1,0 +1,21 @@
+# Ignore environment variables and secrets
+.env
+__pycache__/
+db.sqlite3
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment
+compliance_env/
+
+# Ignore static and media files (generated files)
+staticfiles/
+media/
+
+# Ignore VS Code settings (if using VS Code)
+.vscode/
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
